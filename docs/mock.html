@@ -1,0 +1,38 @@
+<!doctype html>
+<!-- A stand-in for claude.ai's top bar, for drawing the README animation with
+     the real userscript. The usage numbers are made up. See docs/render.swift. -->
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; height: 100%; }
+  body { font: 14px -apple-system, sans-serif; background: var(--page); color: var(--ink); display: flex; align-items: center; }
+  :root { --page: #ffffff; --surface: #faf9f5; --ink: #1f1e1d; --line: rgba(31, 30, 29, 0.15); }
+  :root[data-mode="dark"] { --page: #0d1117; --surface: #262624; --ink: #f0eee6; --line: rgba(240, 238, 230, 0.16); }
+  #window { margin: 0 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+  .dframe-header { position: relative; display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 10px; }
+  .dframe-header button { font: inherit; color: inherit; background: none; border: 1px solid transparent; border-radius: 7px; padding: 5px 9px; white-space: nowrap; }
+  .dframe-header button.share { border-color: var(--line); }
+  .spacer { flex: 1; min-width: 0; }
+</style>
+<div id="window">
+  <div class="dframe-header">
+    <button>Quarterly plan review ⌄</button>
+    <div class="spacer"></div>
+    <button class="share">Share</button>
+  </div>
+</div>
+<script>
+  const at = h => new Date(Date.now() + h * 3600e3).toISOString();
+  const USAGE = { limits: [
+    { kind: 'session',       group: 'session', percent: 42, resets_at: at(2.2) },
+    { kind: 'weekly_all',    group: 'weekly',  percent: 61, resets_at: at(76.5) },
+    { kind: 'weekly_scoped', group: 'weekly',  percent: 18, resets_at: at(76.5), scope: { model: { display_name: 'Fable' } } },
+  ] };
+  window.fetch = async url => ({ ok: true, status: 200, json: async () => (String(url).endsWith('/usage') ? USAGE : [{ uuid: 'mock' }]) });
+  window.setFrame = (mode, width) => {
+    document.documentElement.dataset.mode = mode;
+    document.getElementById('window').style.width = width + 'px';
+    window.dispatchEvent(new Event('resize'));
+    return 'ok';
+  };
+</script>
+<script src="../claude-usage-hud.user.js"></script>

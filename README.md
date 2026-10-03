@@ -4,9 +4,13 @@ A userscript that shows your claude.ai usage limits in the page's top bar:
 the 5-hour session, the weekly limit, and any per-model weekly limits, each
 with the time until it resets.
 
-```text
-Session ▮▯▯▯▯▯ 2% ↻ 3h 4m  │  Weekly ▮▮▯▯▯▯ 33% ↻ 5d 19h  │  Fable ▯▯▯▯▯▯ 1% ↻ 5d 19h
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/hud-dark.gif">
+  <img alt="A top bar with a chat title on the left and a Share button on the right. Between them: Session 42%, Weekly 61% with a pace tick, and Fable 18%, each with the time until it resets. As the bar narrows, the bars fold into a +1 badge, then +2, then just the percentages" src="docs/hud-light.gif" width="840">
+</picture>
+
+The animation is the real script running in a stand-in for the site's top bar
+([`docs/mock.html`](docs/mock.html)), with made-up numbers.
 
 - **Pace:** weekly bars carry a tick where even use would have you by now.
   Hover for how far over or under you are and how much is left per day.
