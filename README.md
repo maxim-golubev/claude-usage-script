@@ -1,89 +1,86 @@
-# Claude Usage Script
+# Claude Usage HUD
 
-Tampermonkey userscript and OpenClaw skill for monitoring Claude.ai usage limits (session, weekly, and model-specific) with pace tracking.
+A userscript that shows your claude.ai usage limits in the page's top bar:
+the 5-hour session, the weekly limit, and any per-model weekly limits, each
+with the time until it resets.
 
-## Userscript — Claude Usage HUD
-
-A lightweight HUD injected into the Claude.ai interface that displays your current usage across all rate-limit tiers.
-
-### Features
-
-- **Dynamic bars** — automatically detects all usage tiers from the API (session, weekly, Sonnet, Opus, OAuth, Cowork). New tiers appear without code changes.
-- **Pace tracking** — weekly bars show a tick mark indicating your ideal usage pace. Hover for details: whether you're over/under pace, your daily budget, and the max percentage to stay on track.
-- **Responsive overflow** — on chat pages, bars that don't fit the available header width collapse into a `+N` badge with a hover tooltip showing hidden stats.
-- **Instant updates** — intercepts completion streams and refreshes usage ~1 second after each message, plus a 60-second polling fallback.
-- **SPA-aware** — survives page navigation, React re-renders, sidebar toggles, and artifact panel resizing without flicker.
-- **Two display modes** — inline in the chat header, or fixed-position on the home screen with sidebar-aware positioning.
-
-### Screenshot
-
-<!-- Add a screenshot here: ![HUD screenshot](screenshots/hud.png) -->
-
-### Installation
-
-1. Install [Tampermonkey](https://www.tampermonkey.net/) (Chrome, Firefox, Edge, Safari)
-2. Click the `.user.js` file in this repo, or create a new script and paste the contents of [`claude-usage-hud.user.js`](claude-usage-hud.user.js)
-3. Visit [claude.ai](https://claude.ai) — the HUD appears in the header
-
-### How it works
-
-The script reads your `lastActiveOrg` cookie and polls `/api/organizations/{orgId}/usage`, which returns utilization percentages and reset times for each rate-limit tier. It renders SVG-based progress bars directly into the page DOM.
-
-No data leaves your browser. No external requests. The script only talks to `claude.ai` using your existing session.
-
-### Configuration
-
-The `BAR_DEFS` array at the top of the script controls bar labels and priority order:
-
-```js
-const BAR_DEFS = [
-    { key: 'five_hour',           label: 'Session',  priority: 1, windowDays: 0 },
-    { key: 'seven_day',           label: 'Weekly',   priority: 2, windowDays: 7 },
-    { key: 'seven_day_sonnet',    label: 'Sonnet',   priority: 3, windowDays: 7 },
-    { key: 'seven_day_opus',      label: 'Opus',     priority: 4, windowDays: 7 },
-    { key: 'seven_day_oauth_apps',label: 'OAuth',    priority: 5, windowDays: 7 },
-    { key: 'seven_day_cowork',    label: 'Cowork',   priority: 6, windowDays: 7 },
-];
+```text
+Session ▮▯▯▯▯▯ 2% ↻ 3h 4m  │  Weekly ▮▮▯▯▯▯ 33% ↻ 5d 19h  │  Fable ▯▯▯▯▯▯ 1% ↻ 5d 19h
 ```
 
-Lower priority numbers are shown first and hidden last when space is limited.
+- **Pace:** weekly bars carry a tick where even use would have you by now.
+  Hover for how far over or under you are and how much is left per day.
+- **Fits the space:** bars that do not fit fold into a `+N` badge with the
+  rest in its tooltip. In a very narrow bar only the percentages remain.
+- **Current:** it refreshes about a second after each reply finishes, when you
+  come back to the tab, and every minute.
+- **Private:** it reads one endpoint on `claude.ai` with the session you are
+  already logged into. Nothing is sent anywhere else.
 
-## OpenClaw Skill — Claude Usage Monitor
+## Install
 
-*Coming soon.* A custom skill for [OpenClaw](https://openclaw.ai/) that lets you check usage from any messaging channel (Discord, Telegram, WhatsApp, etc.) and optionally sends proactive alerts on a cron schedule.
+1. Install a userscript manager: [Userscripts](https://github.com/quoid/userscripts)
+   for Safari, or [Tampermonkey](https://www.tampermonkey.net/) for Chrome,
+   Firefox, and Edge.
+2. Open [`claude-usage-hud.user.js`](https://raw.githubusercontent.com/maxim-golubev/claude-usage-script/main/claude-usage-hud.user.js)
+   and let the manager install it, or paste its contents into a new script.
+3. Reload [claude.ai](https://claude.ai).
 
-**Note:** This is a self-contained skill — no ClawHub dependency. You audit every line before installing it.
+## Built to survive redesigns
 
-## API Reference
+claude.ai changes its page structure often, and versions 1 and 2 of this
+script broke each time: they looked for specific elements in the header, and a
+redesign removed every one of them. Version 3 depends on as little of the page
+as it can.
 
-The userscript and skill both consume the same undocumented endpoint:
+- **Placement is measured, not assumed.** The script finds the top bar, then
+  measures where its buttons and text are and puts the HUD in the widest empty
+  stretch. It needs no knowledge of what is in the bar. The same pass handles
+  the home page, a chat, a collapsed sidebar, and a narrow window.
+- **Finding the top bar has fallbacks.** A list of selectors, newest first,
+  and every match must also be wide, short, and at the top of the page. If
+  nothing matches, the HUD floats at the top of the page.
+- **The data is read in three shapes.** The endpoint's current form (a
+  `limits` list), its older form (`five_hour`, `seven_day`, …), and keys
+  neither form knows about. Credit balances counted in money are left out.
+- **Nothing on the page is patched.** Earlier versions wrapped `window.fetch`
+  to notice a finished reply, which does nothing when the userscript manager
+  runs the script in its own JavaScript world, as Safari's does. A
+  `PerformanceObserver` sees the same request finish from either world.
+- **One layout pass, run often.** It runs when the page changes and once a
+  second, and it only touches the page when something is different. There is
+  no per-case handling for navigation, re-renders, or resizes.
+- **Failures degrade.** If a refresh fails, the last good numbers stay,
+  dimmed. If the organisation cookie is missing or stale, the organisation is
+  looked up from the account.
+
+Tested on Safari with Userscripts against the claude.ai layout of October
+2026.
+
+## The endpoint
 
 ```
 GET /api/organizations/{orgId}/usage
 ```
 
-Response shape:
+Undocumented, and it may change. The part the script uses today:
 
 ```json
 {
-  "five_hour":            { "utilization": 18, "resets_at": "2026-02-21T15:00:00Z" },
-  "seven_day":            { "utilization": 55, "resets_at": "2026-02-24T04:00:00Z" },
-  "seven_day_sonnet":     { "utilization": 0,  "resets_at": "2026-02-24T04:00:00Z" },
-  "seven_day_opus":       null,
-  "seven_day_oauth_apps": null,
-  "seven_day_cowork":     null,
-  "iguana_necktie":       null,
-  "extra_usage":          null
+  "limits": [
+    { "kind": "session",       "group": "session", "percent": 2,  "resets_at": "2026-10-03T23:40:00Z", "scope": null },
+    { "kind": "weekly_all",    "group": "weekly",  "percent": 33, "resets_at": "2026-10-09T16:00:00Z", "scope": null },
+    { "kind": "weekly_scoped", "group": "weekly",  "percent": 1,  "resets_at": "2026-10-09T16:00:00Z",
+      "scope": { "model": { "display_name": "Fable" }, "surface": null } }
+  ],
+  "five_hour": { "utilization": 2,  "resets_at": "2026-10-03T23:40:00Z" },
+  "seven_day": { "utilization": 33, "resets_at": "2026-10-09T16:00:00Z" }
 }
 ```
 
-- `utilization` is an integer percentage (0–100).
-- `resets_at` is an ISO 8601 timestamp.
-- `null` entries mean the tier is not active for your account.
+`{orgId}` comes from the `lastActiveOrg` cookie, or from
+`GET /api/organizations` when the cookie is absent.
 
-## License
+> Unofficial and not affiliated with Anthropic.
 
-MIT
-
-
-
+MIT License.
