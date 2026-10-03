@@ -4,20 +4,19 @@
 <meta charset="utf-8">
 <style>
   html, body { margin: 0; height: 100%; }
-  body { font: 14px -apple-system, sans-serif; background: var(--page); color: var(--ink); display: flex; align-items: center; }
-  :root { --page: #ffffff; --surface: #faf9f5; --ink: #1f1e1d; --line: rgba(31, 30, 29, 0.15); }
+  body { font: 14px/20px -apple-system, sans-serif; background: var(--page); color: var(--ink); display: flex; align-items: center; }
+  :root { --page: #ffffff; --surface: #fcfcfb; --ink: #0b0b0b; --line: rgba(31, 30, 29, 0.15); }
   :root[data-mode="dark"] { --page: #0d1117; --surface: #262624; --ink: #f0eee6; --line: rgba(240, 238, 230, 0.16); }
   #window { margin: 0 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
   .dframe-header { position: relative; display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 10px; }
   .dframe-header button { font: inherit; color: inherit; background: none; border: 1px solid transparent; border-radius: 7px; padding: 5px 9px; white-space: nowrap; }
   .dframe-header button.share { border-color: var(--line); }
-  .dframe-header button.title { display: inline-flex; align-items: center; gap: 7px; }
-  .dframe-header button.title svg { opacity: 0.6; }
+  .dframe-header button.title { display: inline-flex; align-items: center; gap: 8px; }
   .spacer { flex: 1; min-width: 0; }
 </style>
 <div id="window">
   <div class="dframe-header">
-    <button class="title">Quarterly plan review <svg width="12" height="7" viewBox="0 0 12 7" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path fill="none" d="M1.5 1.5l4.5 4 4.5-4"/></svg></button>
+    <button class="title">Quarterly plan review <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="0.85" stroke-linecap="round" stroke-linejoin="round"><path fill="none" d="M2.6 5.6 8 10.6l5.4-5"/></svg></button>
     <div class="spacer"></div>
     <button class="share">Share</button>
   </div>
