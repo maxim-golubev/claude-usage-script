@@ -11,11 +11,13 @@
   .dframe-header { position: relative; display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 10px; }
   .dframe-header button { font: inherit; color: inherit; background: none; border: 1px solid transparent; border-radius: 7px; padding: 5px 9px; white-space: nowrap; }
   .dframe-header button.share { border-color: var(--line); }
+  .dframe-header button.title { display: inline-flex; align-items: center; gap: 7px; }
+  .dframe-header button.title svg { opacity: 0.6; }
   .spacer { flex: 1; min-width: 0; }
 </style>
 <div id="window">
   <div class="dframe-header">
-    <button>Quarterly plan review ⌄</button>
+    <button class="title">Quarterly plan review <svg width="12" height="7" viewBox="0 0 12 7" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path fill="none" d="M1.5 1.5l4.5 4 4.5-4"/></svg></button>
     <div class="spacer"></div>
     <button class="share">Share</button>
   </div>
