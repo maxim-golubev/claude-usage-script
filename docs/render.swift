@@ -3,7 +3,7 @@
 //
 //   swiftc -o "$TMPDIR/hud-bin" docs/render.swift && "$TMPDIR/hud-bin" "$PWD" "$TMPDIR/hud"
 //   for t in light dark; do ffmpeg -y -framerate 10/11 -i "$TMPDIR/hud/$t-%02d.png" -filter_complex \
-//       "scale=1680:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=64[p];[b][p]paletteuse=dither=none" -loop 0 docs/hud-$t.gif; done
+//       "scale=1680:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=64[p];[b][p]paletteuse=dither=none" -loop 0 docs/usage-bar-$t.gif; done
 import AppKit
 import WebKit
 

@@ -5,8 +5,8 @@ the 5-hour session, the weekly limit, and any per-model weekly limits, each
 with the time until it resets.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/hud-dark.gif">
-  <img alt="A top bar with a chat title on the left and a Share button on the right. Between them: Session 42%, Weekly 61% with a pace tick, and Fable 18%, each with the time until it resets. As the bar narrows, the bars fold into a +1 badge, then +2, then just the percentages" src="docs/hud-light.gif" width="840">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/usage-bar-dark.gif">
+  <img alt="A top bar with a chat title on the left and a Share button on the right. Between them: Session 42%, Weekly 61% with a pace tick, and Fable 18%, each with the time until it resets. As the bar narrows, the bars fold into a +1 badge, then +2, then just the percentages" src="docs/usage-bar-light.gif" width="840">
 </picture>
 
 The animation is the real script running in a stand-in for the site's top bar
