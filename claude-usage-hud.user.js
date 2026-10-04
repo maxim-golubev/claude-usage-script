@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Claude Usage HUD
 // @namespace   https://github.com/maxim-golubev/claude-usage-script
-// @version     3.0.0
+// @version     3.0.1
 // @description Usage bars for claude.ai (session, weekly, per-model) with pace tracking
 // @author      Maxim Golubev
 // @match       https://claude.ai/*
@@ -34,7 +34,7 @@
 (function () {
     'use strict';
 
-    const VERSION = '3.0.0';
+    const VERSION = '3.0.1';
 
     const CONFIG = {
         POLL_MS: 60000,           // usage refresh while the tab is visible
@@ -86,19 +86,24 @@
         .cuh[data-stale] > * { opacity: 0.5; }
         .cuh > * { pointer-events: auto; }
 
-        .cuh-bar, .cuh-more {
-            position: relative; display: flex; align-items: center; gap: 8px;
-            padding: 6px 8px; border-radius: 6px; cursor: default;
-        }
+        .cuh-bar, .cuh-more { position: relative; padding: 6px 8px; border-radius: 6px; cursor: default; }
         .cuh-bar:hover, .cuh-more:hover { background: rgba(127, 127, 127, 0.14); }
-        .cuh-label { opacity: 0.75; }
-        .cuh-pct { opacity: 0.65; min-width: 30px; text-align: right; font-variant-numeric: tabular-nums; }
+
+        /* A bar's text shares one baseline whatever its size, and the track
+           hangs off that baseline too (an empty flex item's baseline is its
+           bottom edge), centred on the height of the digits. So nothing here
+           depends on how a browser rounds a line box. */
+        .cuh-bar { display: flex; align-items: baseline; gap: 8px; }
+        /* Mostly lowercase, so it sits low against the track; half a pixel up
+           puts its weight on the track's centre line. */
+        .cuh-label { position: relative; top: -0.5px; opacity: 0.75; }
+        .cuh-pct { opacity: 0.65; font-variant-numeric: tabular-nums; }
         .cuh-reset { opacity: 0.45; font-size: 11px; font-weight: 400; }
-        .cuh-more { opacity: 0.65; font-size: 11px; }
+        .cuh-more-text { opacity: 0.65; font-size: 11px; }
         .cuh-sep { width: 1px; height: 14px; background: rgba(127, 127, 127, 0.3); pointer-events: none; }
 
-        .cuh-track { position: relative; width: 60px; height: 6px; border-radius: 3px; background: rgba(127, 127, 127, 0.25); }
-        .cuh-fill { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: currentColor; opacity: 0.4; }
+        .cuh-track { position: relative; top: -1px; width: 60px; height: 6px; border-radius: 3px; background: rgba(127, 127, 127, 0.25); }
+        .cuh-fill { position: absolute; inset: 0; border-radius: 3px; background: currentColor; opacity: 0.4; }
         .cuh-tick { position: absolute; top: -3px; bottom: -3px; width: 2px; margin-left: -1px; border-radius: 1px; background: currentColor; opacity: 0.4; }
         .cuh-tick[data-ahead] { background: #d4820a; opacity: 0.9; }
 
@@ -326,12 +331,14 @@
 
         const track = el('span', 'cuh-track');
         const fill = el('span', 'cuh-fill');
-        fill.style.width = `${bar.usage}%`;
+        // Clipped, not sized: the fill is the whole track with its right side
+        // cut away, so a sliver of 1% still follows the track's rounded end.
+        fill.style.clipPath = `inset(0 ${100 - bar.usage}% 0 0 round 3px)`;
         track.append(fill);
         const p = pace(bar);
         if (p) {
             const tick = el('span', 'cuh-tick');
-            tick.style.left = `${p.ideal}%`;
+            tick.style.left = `clamp(1px, ${p.ideal}%, calc(100% - 1px))`;   // never off either end
             if (p.ahead) tick.dataset.ahead = '';
             track.append(tick);
         }
