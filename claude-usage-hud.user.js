@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Claude Usage HUD
 // @namespace   https://github.com/maxim-golubev/claude-usage-script
-// @version     3.0.1
+// @version     3.0.2
 // @description Usage bars for claude.ai (session, weekly, per-model) with pace tracking
 // @author      Maxim Golubev
 // @match       https://claude.ai/*
@@ -34,7 +34,7 @@
 (function () {
     'use strict';
 
-    const VERSION = '3.0.1';
+    const VERSION = '3.0.2';
 
     const CONFIG = {
         POLL_MS: 60000,           // usage refresh while the tab is visible
@@ -50,6 +50,7 @@
     const HEADER_SELECTORS = [
         '[data-testid="chat-header"]',
         '.dframe-header',
+        '[class*="incognito-header"]',   // an incognito chat's black bar, before its first message
         'header[data-testid="page-header"]',
         'main header',
         'header',
@@ -500,6 +501,18 @@
         return { left: left + 48, right: window.innerWidth - 120, top: 0, height: 48 };
     }
 
+    /** The text colour of whatever is under the HUD's left end, or '' to inherit. */
+    function colourBeneath(hud) {
+        const r = hud.getBoundingClientRect();
+        if (!isVisible(r)) return '';
+        const x = Math.min(Math.max(r.left + 4, 0), window.innerWidth - 1);
+        const y = Math.min(Math.max(r.top + r.height / 2, 0), window.innerHeight - 1);
+        for (const node of document.elementsFromPoint(x, y)) {
+            if (!hud.contains(node)) return getComputedStyle(node).color;
+        }
+        return '';
+    }
+
     function setStyle(node, prop, value) {
         if (node.style[prop] !== value) node.style[prop] = value;
     }
@@ -524,6 +537,10 @@
         if (inHeader) delete hud.dataset.floating; else hud.dataset.floating = '';
 
         build(hud);
+        // In a bar the HUD takes the bar's text colour. Floating, it would take the
+        // page's, which can be the wrong one for what is behind it (an incognito
+        // chat's black bar has white text): take the colour of what it sits on.
+        setStyle(hud, 'color', inHeader ? '' : colourBeneath(hud));
 
         const gap = header ? widestGap(header, hud) : fallbackGap();
         const available = gap.right - gap.left - 2 * CONFIG.EDGE_MARGIN;
